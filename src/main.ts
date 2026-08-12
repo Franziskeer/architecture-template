@@ -1,3 +1,4 @@
 import { startApi } from "./apps/api/server";
+import { config } from "./shared/config";
 
-startApi(Number(process.env.PORT ?? 3000));
+startApi(config.port);

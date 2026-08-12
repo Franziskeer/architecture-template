@@ -1,4 +1,5 @@
 import { createApplication } from "../../bootstrap";
+import { config } from "../../shared/config";
 
 function readFlag(name: string): string | undefined {
   const position = process.argv.indexOf(`--${name}`);
@@ -42,6 +43,8 @@ async function run(): Promise<void> {
   }
 
   console.log(`
+Entorno: ${config.nodeEnv}
+
 Uso:
   npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
   npm run cli -- record-payment --order order-1 --amount 20

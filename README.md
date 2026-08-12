@@ -43,11 +43,13 @@ src/
     payments.routes.ts            # router Express del feature
     record-payment.ts
   shared/                         # solo lo realmente compartido
+    config.ts                     # variables de entorno tipadas
     money.vo.ts
   bootstrap.ts                    # junta módulos de feature
   main.ts                         # arranca la API
 public/
   index.html                      # frontend que consume la API
+.env.example                      # plantilla de variables
 ```
 
 Al abrir `src/` lees el producto (pedidos, pagos) y sus puntos de entrada. Eso es **screaming architecture** + **package by feature**.
@@ -65,6 +67,7 @@ Terminal ───────────────→ CLI ─┘
 - Cambiar Express por Fastify/Nest afecta a `apps/api/` y a los `*.routes.ts`.
 - La CLI traduce argumentos y reutiliza la misma aplicación.
 - Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
+- `shared/config.ts` carga `.env` y tipa la config; el dominio no lee `process.env`.
 - El dominio no importa nada de HTTP, HTML ni `process.argv`.
 
 ### Dependencias (dentro de un feature rico)
@@ -113,13 +116,19 @@ El dominio del feature no conoce HTTP ni BD.
 
 ## Cómo ejecutar
 
+Copia variables locales:
+
+```bash
+cp .env.example .env
+```
+
 ### API + frontend
 
 ```bash
 npm start
 ```
 
-Abre `http://localhost:3000`. Endpoints:
+Abre `http://localhost:3000` (o el `PORT` de tu `.env`). Endpoints:
 
 ```text
 GET  /api/health

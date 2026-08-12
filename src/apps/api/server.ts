@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { createApplication } from "../../bootstrap";
 import { createOrderRoutes } from "../../orders/interface/order.routes";
 import { createPaymentRoutes } from "../../payments/payments.routes";
+import { config } from "../../shared/config";
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../public");
 
@@ -11,7 +12,7 @@ const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..
  * App Express: middleware, montaje de routers de feature y listen.
  * Las rutas concretas viven en cada feature.
  */
-export function startApi(port = 3000) {
+export function startApi(port = config.port) {
   const app = createApplication();
   const server = express();
 
@@ -19,7 +20,7 @@ export function startApi(port = 3000) {
   server.use(express.static(publicDir));
 
   server.get("/api/health", (_req, res) => {
-    res.json({ status: "ok" });
+    res.json({ status: "ok", env: config.nodeEnv });
   });
 
   server.use("/api/orders", createOrderRoutes(app.createOrder));
@@ -31,6 +32,6 @@ export function startApi(port = 3000) {
   });
 
   return server.listen(port, () => {
-    console.log(`API Express y frontend: http://localhost:${port}`);
+    console.log(`API Express y frontend: http://localhost:${port} (${config.nodeEnv})`);
   });
 }
