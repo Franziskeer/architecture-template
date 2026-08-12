@@ -1,17 +1,15 @@
-# Package by feature con API, frontend y CLI
+# Package by feature: orders (complejo) vs payments (simple)
 
-Ejemplo en TypeScript: el repo **grita el negocio** (`orders`, `payments`), no el framework.
+El repo **grita el negocio** (`orders`, `payments`), no el framework.
 
 ## Enfoque
 
 | Feature | Complejidad | Estructura |
 |---------|-------------|------------|
-| **orders** | Reglas de negocio | Capas dentro del feature (`domain`, `application`, …) |
-| **payments** | CRUD simple | Un vertical slice en un solo archivo |
-| **shared** | Código transversal | Poco y justificado (`Money`) |
-| **apps** | Adaptadores de entrada | API HTTP y CLI |
-
-Así evitas Clean Architecture global el día 1 y la introduces **por feature** cuando duele.
+| **orders** | Compleja | Vertical slices + domain/infra compartidos |
+| **payments** | Simple | Un slice en pocos archivos |
+| **shared** | Transversal | Mínimo (`config`, `logger`, `Money`) |
+| **apps** | Entradas | API Express y CLI |
 
 ---
 
@@ -19,126 +17,106 @@ Así evitas Clean Architecture global el día 1 y la introduces **por feature** 
 
 ```text
 src/
-  apps/                           # formas de entrar en la aplicación
-    api/
-      server.ts                   # Express: middleware + montar routers
-    cli/
-      cli.ts                      # comandos de terminal
-  orders/                         # feature con reglas → capas locales
-    orders.module.ts              # cableado del feature
+  apps/
+    api/server.ts                 # middleware + montar routers de feature
+    cli/cli.ts
+  orders/                         # FEATURE COMPLEJA (vertical slices)
     domain/
-      order.entity.ts
-      order.repository.ts         # puerto
-    application/
-      create-order.use-case.ts
-      get-order.use-case.ts
-      list-orders-by-status.use-case.ts
-      order.dto.ts
-      order.mapper.ts
+      order.ts                    # entity
+      order-repository.ts         # puerto
+    create-order/
+      create-order.ts             # caso de uso (clase CreateOrder)
+      create-order.dto.ts
+      create-order.route.ts       # HTTP del slice
+    get-order/
+      get-order.ts
+      get-order.route.ts
+    list-by-status/
+      list-by-status.ts
+      list-by-status.route.ts
     infrastructure/
-      in-memory-order.repository.ts
-      sqlite-order.repository.ts  # segundo adaptador del mismo puerto
-    interface/
-      order.controller.ts
-      order.routes.ts             # router Express del feature
-  payments/                       # feature simple → sin capas
-    payments.module.ts            # cableado del feature
-    payments.routes.ts            # router Express del feature
-    record-payment.ts
-  shared/                         # solo lo realmente compartido
-    config.ts                     # variables de entorno tipadas
-    logger.ts                     # logging estructurado (pino)
+      in-memory-order-repository.ts
+      sqlite-order-repository.ts
+    order-mapper.ts               # shared entre slices del feature
+    orders.routes.ts              # compone routers de slices
+    orders.module.ts              # cableado del feature
+  payments/                       # FEATURE SIMPLE
+    record-payment.ts             # lógica en un archivo
+    payments.routes.ts
+    payments.module.ts
+  shared/
+    config.ts
+    logger.ts
     money.vo.ts
-  bootstrap.ts                    # junta módulos de feature
-  main.ts                         # arranca la API
-public/
-  index.html                      # frontend que consume la API
-.env.example                      # plantilla de variables
+  bootstrap.ts
+  main.ts
+public/index.html
+.env.example
 ```
-
-Al abrir `src/` lees el producto (pedidos, pagos) y sus puntos de entrada. Eso es **screaming architecture** + **package by feature**.
 
 ## Cómo encajan las interfaces
 
 ```text
 Navegador → frontend → HTTP API ┐
-                               ├→ use case → dominio → repository
+                               ├→ slice use case → domain → repository
 Terminal ───────────────→ CLI ─┘
                                     ↑
                          memory o sqlite (mismo puerto)
 ```
 
-- El frontend no invoca controllers directamente: hace `fetch` a la API.
-- `apps/api/server.ts` monta routers; las rutas viven en cada feature.
-- Cambiar Express por Fastify/Nest afecta a `apps/api/` y a los `*.routes.ts`.
-- La CLI traduce argumentos y reutiliza la misma aplicación.
-- Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
-- `shared/config.ts` carga `.env` y tipa la config; el dominio no lee `process.env`.
-- `shared/logger.ts` (pino) se usa en adaptadores; el dominio no registra logs.
-- `ORDER_REPOSITORY=memory|sqlite` elige el adaptador sin tocar use cases.
-- El dominio no importa nada de HTTP, HTML ni `process.argv`.
+- `orders`: cada acción es un slice (`create-order`, `get-order`, `list-by-status`).
+- `payments`: un solo flujo, sin carpetas de capas.
+- `apps/api` solo monta; no conoce endpoints internos.
+- Dominio sin HTTP ni `process.env`.
 
-### Dependencias (dentro de un feature rico)
+### Dependencias (feature compleja)
 
 ```text
-interface → application → domain ← infrastructure
+*.route.ts → CreateOrder/GetOrder/... → domain ← infrastructure
 ```
-
-El dominio del feature no conoce HTTP ni BD.
 
 ---
 
-## Tipos de fichero
+## Naming
 
-| Tipo | Dónde | Rol |
-|------|-------|-----|
-| **Entity** | `orders/domain` | Identidad + reglas (`Order.confirm()`) |
-| **Value Object** | `shared` o `domain` | Sin id; por valor (`Money`) |
-| **Repository (puerto)** | `orders/domain` | Contrato de persistencia |
-| **Use case** | `orders/application` | Orquesta un flujo |
-| **DTO / Mapper** | `orders/application` | Frontera API ↔ dominio |
-| **Repo (impl)** | `orders/infrastructure` | Memoria, SQL, etc. |
-| **Controller** | `orders/interface` | HTTP → use case |
-| **Slice simple** | `payments/record-payment.ts` | Todo el feature en un archivo |
+| Antes | Ahora |
+|-------|--------|
+| `CreateOrderUseCase` | `CreateOrder` |
+| `ListOrdersByStatusUseCase` | `ListByStatus` |
+| `order.entity.ts` | `order.ts` |
+| `application/` monolítica | carpeta por slice |
+| `OrderController` gordo | HTTP en `*.route.ts` de cada slice |
 
 ---
 
 ## Cómo no sobreingenierizar
 
-1. Carpeta por feature desde el día 1.
-2. Capas solo dentro del feature que las necesita.
-3. `shared/` mínimo; preferir duplicar poco a acoplar features.
-4. Si `payments` crece: partirlo como `orders/` (domain/application/…).
+1. Empieza como `payments` (pocos archivos).
+2. Cuando haya reglas + varios flujos, pasa a slices como `orders`.
+3. `shared/` solo con piezas realmente transversales.
+4. No vuelvas a `controllers/` / `services/` globales.
 
 ### Camino evolutivo
 
 ```text
-1) feature/un-archivo.ts
-2) sacar entity si hay reglas
-3) puerto de repo si cambias BD o tests lo piden
-4) DTOs/mappers si API ≠ dominio
-5) más adaptadores reutilizando el use case
+1) feature/un-archivo.ts          ← payments
+2) entity + puerto si hay reglas
+3) vertical slices por acción     ← orders
+4) más adaptadores del mismo puerto (sqlite, etc.)
 ```
 
 ---
 
 ## Cómo ejecutar
 
-Copia variables locales:
-
 ```bash
 cp .env.example .env
-```
-
-`LOG_LEVEL` controla el logger (`info`, `debug`, …). En `development` usa formato legible (`pino-pretty`); en otros entornos sale JSON puro.
-
-### API + frontend
-
-```bash
 npm start
 ```
 
-Abre `http://localhost:3000` (o el `PORT` de tu `.env`). Endpoints:
+`LOG_LEVEL` controla el logger. En `development`, formato legible; en otros entornos, JSON.
+
+### Endpoints
 
 ```text
 GET  /api/health
@@ -148,17 +126,12 @@ GET  /api/orders/:id
 POST /api/payments
 ```
 
-### Persistencia (memory vs sqlite)
-
-Por defecto usa memoria. Para SQLite (Node >= 22, módulo `node:sqlite`):
+### Persistencia
 
 ```bash
-# en .env
 ORDER_REPOSITORY=sqlite
 SQLITE_PATH=./data/orders.sqlite
 ```
-
-El use case no cambia: solo se sustituye la implementación de `OrderRepository`.
 
 ### CLI
 
@@ -168,6 +141,3 @@ npm run cli -- get-order --id <order-id>
 npm run cli -- list-orders --status confirmed
 npm run cli -- record-payment --order order-1 --amount 20
 ```
-
-Con `ORDER_REPOSITORY=sqlite`, create/get de CLI y API comparten el mismo fichero si apuntan al mismo `SQLITE_PATH`.
-Con `memory`, cada proceso tiene su propio almacén.

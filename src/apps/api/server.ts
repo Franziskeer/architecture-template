@@ -2,7 +2,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApplication } from "../../bootstrap";
-import { createOrderRoutes } from "../../orders/interface/order.routes";
+import { createOrdersRoutes } from "../../orders/orders.routes";
 import { createPaymentRoutes } from "../../payments/payments.routes";
 import { config } from "../../shared/config";
 import { logger } from "../../shared/logger";
@@ -14,7 +14,6 @@ const publicDir = path.join(
 
 /**
  * App Express: middleware, montaje de routers de feature y listen.
- * Las rutas concretas viven en cada feature.
  */
 export function startApi(port = config.port) {
   const app = createApplication();
@@ -45,7 +44,11 @@ export function startApi(port = config.port) {
 
   server.use(
     "/api/orders",
-    createOrderRoutes(app.createOrder, app.getOrder, app.listOrdersByStatus)
+    createOrdersRoutes({
+      createOrder: app.createOrder,
+      getOrder: app.getOrder,
+      listByStatus: app.listByStatus,
+    })
   );
   server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 

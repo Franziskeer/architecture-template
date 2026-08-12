@@ -1,14 +1,14 @@
 /**
- * Composition del feature orders.
- * Elige el adaptador de persistencia según config (memory | sqlite).
+ * Composition del feature orders (complejo).
+ * Vertical slices + dominio/infra compartidos del feature.
  */
 import { config } from "../shared/config";
-import { CreateOrderUseCase } from "./application/create-order.use-case";
-import { GetOrderUseCase } from "./application/get-order.use-case";
-import { ListOrdersByStatusUseCase } from "./application/list-orders-by-status.use-case";
-import type { OrderRepository } from "./domain/order.repository";
-import { InMemoryOrderRepository } from "./infrastructure/in-memory-order.repository";
-import { SqliteOrderRepository } from "./infrastructure/sqlite-order.repository";
+import { CreateOrder } from "./create-order/create-order";
+import type { OrderRepository } from "./domain/order-repository";
+import { GetOrder } from "./get-order/get-order";
+import { InMemoryOrderRepository } from "./infrastructure/in-memory-order-repository";
+import { SqliteOrderRepository } from "./infrastructure/sqlite-order-repository";
+import { ListByStatus } from "./list-by-status/list-by-status";
 
 function createOrderRepository(): OrderRepository {
   if (config.orderRepository === "sqlite") {
@@ -18,14 +18,11 @@ function createOrderRepository(): OrderRepository {
 }
 
 export function createOrdersModule() {
-  const orderRepository = createOrderRepository();
+  const orders = createOrderRepository();
 
   return {
-    createOrder: new CreateOrderUseCase(
-      orderRepository,
-      () => crypto.randomUUID()
-    ),
-    getOrder: new GetOrderUseCase(orderRepository),
-    listOrdersByStatus: new ListOrdersByStatusUseCase(orderRepository),
+    createOrder: new CreateOrder(orders, () => crypto.randomUUID()),
+    getOrder: new GetOrder(orders),
+    listByStatus: new ListByStatus(orders),
   };
 }

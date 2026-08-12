@@ -1,8 +1,8 @@
 import { recordPayment } from "./record-payment";
 
 /**
- * Composition del feature payments.
- * Sigue siendo un slice simple: solo expone lo que los adaptadores necesitan.
+ * Composition del feature payments (SIMPLE).
+ * Un solo flujo: no hace falta vertical slices ni capas.
  */
 export function createPaymentsModule() {
   return {

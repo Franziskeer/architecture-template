@@ -58,7 +58,7 @@ async function run(): Promise<void> {
     if (!["draft", "confirmed", "cancelled"].includes(status)) {
       throw new Error("status debe ser draft | confirmed | cancelled");
     }
-    const orders = await app.listOrdersByStatus.execute(status);
+    const orders = await app.listByStatus.execute(status);
     log.info({ status, count: orders.length }, "cli_list_orders_ok");
     console.log(JSON.stringify(orders, null, 2));
     return;

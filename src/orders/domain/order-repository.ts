@@ -1,7 +1,7 @@
 /**
- * REPOSITORY (puerto) - dentro del feature orders
+ * Puerto de persistencia del feature orders.
  */
-import type { Order, OrderStatus } from "./order.entity";
+import type { Order, OrderStatus } from "./order";
 
 export interface OrderRepository {
   save(order: Order): Promise<void>;

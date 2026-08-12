@@ -1,16 +1,12 @@
 /**
- * Adaptador SQLite del puerto OrderRepository (node:sqlite, sin deps nativas).
+ * Adaptador SQLite del puerto OrderRepository (node:sqlite).
  */
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { Money } from "../../shared/money.vo";
-import {
-  Order,
-  OrderItem,
-  type OrderStatus,
-} from "../domain/order.entity";
-import type { OrderRepository } from "../domain/order.repository";
+import { Order, OrderItem, type OrderStatus } from "../domain/order";
+import type { OrderRepository } from "../domain/order-repository";
 
 interface StoredItem {
   productId: string;

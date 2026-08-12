@@ -1,5 +1,5 @@
 /**
- * ENTITY (dominio de orders)
+ * Entity del feature orders (dominio compartido entre slices).
  */
 import { Money } from "../../shared/money.vo";
 
