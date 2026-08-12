@@ -5,7 +5,7 @@
 export class Money {
   private constructor(
     readonly amount: number,
-    readonly currency: string
+    readonly currency: string,
   ) {}
 
   static of(amount: number, currency: string): Money {

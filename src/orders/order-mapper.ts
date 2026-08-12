@@ -20,14 +20,7 @@ export interface OrderOutput {
 
 export class OrderMapper {
   static toDomain(id: string, input: CreateOrderInput): Order {
-    const items = input.items.map(
-      (i) =>
-        new OrderItem(
-          i.productId,
-          i.quantity,
-          Money.of(i.unitPrice, i.currency)
-        )
-    );
+    const items = input.items.map((i) => new OrderItem(i.productId, i.quantity, Money.of(i.unitPrice, i.currency)));
     return Order.create(id, input.customerId, items);
   }
 

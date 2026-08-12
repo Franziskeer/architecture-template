@@ -10,7 +10,7 @@ export class Order {
     readonly id: string,
     readonly customerId: string,
     private items: OrderItem[],
-    private status: OrderStatus
+    private status: OrderStatus,
   ) {}
 
   static create(id: string, customerId: string, items: OrderItem[]): Order {
@@ -21,12 +21,7 @@ export class Order {
   }
 
   /** Rehidrata un pedido ya persistido (infra → dominio). */
-  static reconstitute(
-    id: string,
-    customerId: string,
-    items: OrderItem[],
-    status: OrderStatus
-  ): Order {
+  static reconstitute(id: string, customerId: string, items: OrderItem[], status: OrderStatus): Order {
     if (!items.length) {
       throw new Error("Un pedido necesita al menos un ítem");
     }
@@ -49,10 +44,7 @@ export class Order {
   }
 
   total(): Money {
-    return this.items.reduce(
-      (sum, item) => sum.add(item.lineTotal()),
-      Money.zero("EUR")
-    );
+    return this.items.reduce((sum, item) => sum.add(item.lineTotal()), Money.zero("EUR"));
   }
 }
 
@@ -60,7 +52,7 @@ export class OrderItem {
   constructor(
     readonly productId: string,
     readonly quantity: number,
-    readonly unitPrice: Money
+    readonly unitPrice: Money,
   ) {
     if (quantity <= 0) throw new Error("quantity debe ser > 0");
   }

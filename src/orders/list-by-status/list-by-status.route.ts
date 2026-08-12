@@ -9,9 +9,7 @@ const ORDER_STATUSES: OrderStatus[] = ["draft", "confirmed", "cancelled"];
 
 function parseStatus(value: unknown): OrderStatus | null {
   if (typeof value !== "string") return null;
-  return ORDER_STATUSES.includes(value as OrderStatus)
-    ? (value as OrderStatus)
-    : null;
+  return ORDER_STATUSES.includes(value as OrderStatus) ? (value as OrderStatus) : null;
 }
 
 export function listByStatusRoute(listByStatus: ListByStatus): Router {

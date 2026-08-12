@@ -9,11 +9,7 @@ import type { ListByStatus } from "./list-by-status/list-by-status";
 /**
  * Compone los routers de cada slice del feature orders.
  */
-export function createOrdersRoutes(deps: {
-  createOrder: CreateOrder;
-  getOrder: GetOrder;
-  listByStatus: ListByStatus;
-}): Router {
+export function createOrdersRoutes(deps: { createOrder: CreateOrder; getOrder: GetOrder; listByStatus: ListByStatus }): Router {
   const router = Router();
 
   router.use(createOrderRoute(deps.createOrder));

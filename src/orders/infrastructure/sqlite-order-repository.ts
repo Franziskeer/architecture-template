@@ -55,52 +55,27 @@ export class SqliteOrderRepository implements OrderRepository {
           customer_id = excluded.customer_id,
           status = excluded.status,
           items_json = excluded.items_json
-      `
+      `,
       )
-      .run(
-        order.id,
-        order.customerId,
-        order.getStatus(),
-        JSON.stringify(items)
-      );
+      .run(order.id, order.customerId, order.getStatus(), JSON.stringify(items));
   }
 
   async findById(id: string): Promise<Order | null> {
-    const row = this.db
-      .prepare(
-        `SELECT id, customer_id, status, items_json FROM orders WHERE id = ?`
-      )
-      .get(id) as OrderRow | undefined;
+    const row = this.db.prepare(`SELECT id, customer_id, status, items_json FROM orders WHERE id = ?`).get(id) as OrderRow | undefined;
 
     return row ? this.toDomain(row) : null;
   }
 
   async findByStatus(status: OrderStatus): Promise<Order[]> {
-    const rows = this.db
-      .prepare(
-        `SELECT id, customer_id, status, items_json FROM orders WHERE status = ?`
-      )
-      .all(status) as unknown as OrderRow[];
+    const rows = this.db.prepare(`SELECT id, customer_id, status, items_json FROM orders WHERE status = ?`).all(status) as unknown as OrderRow[];
 
     return rows.map((row) => this.toDomain(row));
   }
 
   private toDomain(row: OrderRow): Order {
     const storedItems = JSON.parse(row.items_json) as StoredItem[];
-    const items = storedItems.map(
-      (item) =>
-        new OrderItem(
-          item.productId,
-          item.quantity,
-          Money.of(item.unitPrice, item.currency)
-        )
-    );
+    const items = storedItems.map((item) => new OrderItem(item.productId, item.quantity, Money.of(item.unitPrice, item.currency)));
 
-    return Order.reconstitute(
-      row.id,
-      row.customer_id,
-      items,
-      row.status as OrderStatus
-    );
+    return Order.reconstitute(row.id, row.customer_id, items, row.status as OrderStatus);
   }
 }

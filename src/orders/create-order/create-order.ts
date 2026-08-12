@@ -7,7 +7,7 @@ import type { CreateOrderInput } from "./create-order.dto";
 export class CreateOrder {
   constructor(
     private readonly orders: OrderRepository,
-    private readonly idGenerator: () => string
+    private readonly idGenerator: () => string,
   ) {}
 
   async execute(input: CreateOrderInput): Promise<OrderOutput> {

@@ -51,10 +51,7 @@ async function run(): Promise<void> {
   }
 
   if (command === "list-orders") {
-    const status = requiredFlag("status") as
-      | "draft"
-      | "confirmed"
-      | "cancelled";
+    const status = requiredFlag("status") as "draft" | "confirmed" | "cancelled";
     if (!["draft", "confirmed", "cancelled"].includes(status)) {
       throw new Error("status debe ser draft | confirmed | cancelled");
     }
@@ -86,7 +83,7 @@ Uso:
   npm run cli -- get-order --id <order-id>
   npm run cli -- list-orders --status confirmed
   npm run cli -- record-payment --order order-1 --amount 20
-  `.trim()
+  `.trim(),
   );
 }
 

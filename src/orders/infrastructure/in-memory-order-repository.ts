@@ -13,8 +13,6 @@ export class InMemoryOrderRepository implements OrderRepository {
   }
 
   async findByStatus(status: OrderStatus): Promise<Order[]> {
-    return [...this.store.values()].filter(
-      (order) => order.getStatus() === status
-    );
+    return [...this.store.values()].filter((order) => order.getStatus() === status);
   }
 }

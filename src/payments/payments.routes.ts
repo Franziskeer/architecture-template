@@ -11,9 +11,7 @@ const log = childLogger({ feature: "payments" });
  * Rutas HTTP del feature payments.
  * Slice simple: router aquí; si crece, muévelo a interface/.
  */
-export function createPaymentRoutes(
-  record: RecordPayment = recordPayment
-): Router {
+export function createPaymentRoutes(record: RecordPayment = recordPayment): Router {
   const router = Router();
 
   router.post("/", async (req, res, next) => {
@@ -24,7 +22,7 @@ export function createPaymentRoutes(
           orderId: (result as { orderId?: string }).orderId,
           paymentId: (result as { paymentId?: string }).paymentId,
         },
-        "payment_recorded"
+        "payment_recorded",
       );
       res.status(201).json(result);
     } catch (error) {

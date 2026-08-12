@@ -4,12 +4,12 @@ El repo **grita el negocio** (`orders`, `payments`), no el framework.
 
 ## Enfoque
 
-| Feature | Complejidad | Estructura |
-|---------|-------------|------------|
-| **orders** | Compleja | Vertical slices + domain/infra compartidos |
-| **payments** | Simple | Un slice en pocos archivos |
-| **shared** | Transversal | Mínimo (`config`, `logger`, `Money`) |
-| **apps** | Entradas | API Express y CLI |
+| Feature      | Complejidad | Estructura                                 |
+| ------------ | ----------- | ------------------------------------------ |
+| **orders**   | Compleja    | Vertical slices + domain/infra compartidos |
+| **payments** | Simple      | Un slice en pocos archivos                 |
+| **shared**   | Transversal | Mínimo (`config`, `logger`, `Money`)       |
+| **apps**     | Entradas    | API Express y CLI                          |
 
 ---
 
@@ -79,13 +79,13 @@ Terminal ───────────────→ CLI ─┘
 
 ## Naming
 
-| Antes | Ahora |
-|-------|--------|
-| `CreateOrderUseCase` | `CreateOrder` |
-| `ListOrdersByStatusUseCase` | `ListByStatus` |
-| `order.entity.ts` | `order.ts` |
-| `application/` monolítica | carpeta por slice |
-| `OrderController` gordo | HTTP en `*.route.ts` de cada slice |
+| Antes                       | Ahora                              |
+| --------------------------- | ---------------------------------- |
+| `CreateOrderUseCase`        | `CreateOrder`                      |
+| `ListOrdersByStatusUseCase` | `ListByStatus`                     |
+| `order.entity.ts`           | `order.ts`                         |
+| `application/` monolítica   | carpeta por slice                  |
+| `OrderController` gordo     | HTTP en `*.route.ts` de cada slice |
 
 ---
 

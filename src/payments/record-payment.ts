@@ -21,10 +21,7 @@ export interface RecordPaymentResult {
 
 const payments: RecordPaymentResult[] = [];
 
-export async function recordPayment(
-  input: RecordPaymentInput,
-  idGenerator: () => string = () => crypto.randomUUID()
-): Promise<RecordPaymentResult> {
+export async function recordPayment(input: RecordPaymentInput, idGenerator: () => string = () => crypto.randomUUID()): Promise<RecordPaymentResult> {
   const money = Money.of(input.amount, input.currency);
   if (!input.orderId) throw new Error("orderId es obligatorio");
 
