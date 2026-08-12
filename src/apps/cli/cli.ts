@@ -42,6 +42,16 @@ async function run(): Promise<void> {
     return;
   }
 
+  if (command === "list-orders") {
+    const status = requiredFlag("status") as "draft" | "confirmed" | "cancelled";
+    if (!["draft", "confirmed", "cancelled"].includes(status)) {
+      throw new Error("status debe ser draft | confirmed | cancelled");
+    }
+    const orders = await app.listOrdersByStatus.execute(status);
+    console.log(JSON.stringify(orders, null, 2));
+    return;
+  }
+
   if (command === "record-payment") {
     const result = await app.recordPayment({
       orderId: requiredFlag("order"),
@@ -60,6 +70,7 @@ Orders repo: ${config.orderRepository}
 Uso:
   npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
   npm run cli -- get-order --id <order-id>
+  npm run cli -- list-orders --status confirmed
   npm run cli -- record-payment --order order-1 --amount 20
   `.trim());
 }

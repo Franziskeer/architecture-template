@@ -32,6 +32,7 @@ src/
     application/
       create-order.use-case.ts
       get-order.use-case.ts
+      list-orders-by-status.use-case.ts
       order.dto.ts
       order.mapper.ts
     infrastructure/
@@ -138,6 +139,7 @@ Abre `http://localhost:3000` (o el `PORT` de tu `.env`). Endpoints:
 ```text
 GET  /api/health
 POST /api/orders
+GET  /api/orders?status=confirmed
 GET  /api/orders/:id
 POST /api/payments
 ```
@@ -159,6 +161,7 @@ El use case no cambia: solo se sustituye la implementación de `OrderRepository`
 ```bash
 npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
 npm run cli -- get-order --id <order-id>
+npm run cli -- list-orders --status confirmed
 npm run cli -- record-payment --order order-1 --amount 20
 ```
 

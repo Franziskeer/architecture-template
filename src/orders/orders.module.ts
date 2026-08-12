@@ -5,9 +5,10 @@
 import { config } from "../shared/config";
 import { CreateOrderUseCase } from "./application/create-order.use-case";
 import { GetOrderUseCase } from "./application/get-order.use-case";
+import { ListOrdersByStatusUseCase } from "./application/list-orders-by-status.use-case";
+import type { OrderRepository } from "./domain/order.repository";
 import { InMemoryOrderRepository } from "./infrastructure/in-memory-order.repository";
 import { SqliteOrderRepository } from "./infrastructure/sqlite-order.repository";
-import type { OrderRepository } from "./domain/order.repository";
 
 function createOrderRepository(): OrderRepository {
   if (config.orderRepository === "sqlite") {
@@ -25,5 +26,6 @@ export function createOrdersModule() {
       () => crypto.randomUUID()
     ),
     getOrder: new GetOrderUseCase(orderRepository),
+    listOrdersByStatus: new ListOrdersByStatusUseCase(orderRepository),
   };
 }

@@ -23,7 +23,10 @@ export function startApi(port = config.port) {
     res.json({ status: "ok", env: config.nodeEnv });
   });
 
-  server.use("/api/orders", createOrderRoutes(app.createOrder, app.getOrder));
+  server.use(
+    "/api/orders",
+    createOrderRoutes(app.createOrder, app.getOrder, app.listOrdersByStatus)
+  );
   server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 
   server.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

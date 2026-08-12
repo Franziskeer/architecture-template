@@ -76,8 +76,20 @@ export class SqliteOrderRepository implements OrderRepository {
       )
       .get(id) as OrderRow | undefined;
 
-    if (!row) return null;
+    return row ? this.toDomain(row) : null;
+  }
 
+  async findByStatus(status: OrderStatus): Promise<Order[]> {
+    const rows = this.db
+      .prepare(
+        `SELECT id, customer_id, status, items_json FROM orders WHERE status = ?`
+      )
+      .all(status) as unknown as OrderRow[];
+
+    return rows.map((row) => this.toDomain(row));
+  }
+
+  private toDomain(row: OrderRow): Order {
     const storedItems = JSON.parse(row.items_json) as StoredItem[];
     const items = storedItems.map(
       (item) =>

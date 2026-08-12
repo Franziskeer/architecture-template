@@ -1,7 +1,7 @@
 /**
  * Adaptador de infraestructura del feature orders
  */
-import type { Order } from "../domain/order.entity";
+import type { Order, OrderStatus } from "../domain/order.entity";
 import type { OrderRepository } from "../domain/order.repository";
 
 /** Modelo de persistencia (fila/documento). Solo existe si diverge del dominio. */
@@ -21,5 +21,11 @@ export class InMemoryOrderRepository implements OrderRepository {
 
   async findById(id: string): Promise<Order | null> {
     return this.store.get(id) ?? null;
+  }
+
+  async findByStatus(status: OrderStatus): Promise<Order[]> {
+    return [...this.store.values()].filter(
+      (order) => order.getStatus() === status
+    );
   }
 }
