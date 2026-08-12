@@ -1,71 +1,53 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { readFile } from "node:fs/promises";
+import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createApplication } from "../../bootstrap";
 import { OrderController } from "../../orders/interface/order.controller";
 
-const frontendUrl = new URL("../../../public/index.html", import.meta.url);
-
-function sendJson(
-  response: ServerResponse,
-  status: number,
-  body: unknown
-): void {
-  response.writeHead(status, { "content-type": "application/json; charset=utf-8" });
-  response.end(JSON.stringify(body));
-}
-
-async function readJson(request: IncomingMessage): Promise<unknown> {
-  const chunks: Buffer[] = [];
-
-  for await (const chunk of request) {
-    chunks.push(Buffer.from(chunk));
-  }
-
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-}
+const publicDir = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../public"
+);
 
 export function startApi(port = 3000) {
   const app = createApplication();
   const orderController = new OrderController(app.createOrder);
+  const server = express();
 
-  const server = createServer(async (request, response) => {
+  server.use(express.json());
+  server.use(express.static(publicDir));
+
+  server.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
+  server.post("/api/orders", async (req, res) => {
+    const result = await orderController.create(req.body);
+    res.status(result.status).json(result.body);
+  });
+
+  server.post("/api/payments", async (req, res, next) => {
     try {
-      if (request.method === "GET" && request.url === "/") {
-        const html = await readFile(frontendUrl);
-        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        response.end(html);
-        return;
-      }
-
-      if (request.method === "GET" && request.url === "/api/health") {
-        sendJson(response, 200, { status: "ok" });
-        return;
-      }
-
-      if (request.method === "POST" && request.url === "/api/orders") {
-        const result = await orderController.create(await readJson(request));
-        sendJson(response, result.status, result.body);
-        return;
-      }
-
-      if (request.method === "POST" && request.url === "/api/payments") {
-        const result = await app.recordPayment(await readJson(request) as {
-          orderId: string;
-          amount: number;
-          currency: string;
-        });
-        sendJson(response, 201, result);
-        return;
-      }
-
-      sendJson(response, 404, { error: "Ruta no encontrada" });
+      const result = await app.recordPayment(req.body);
+      res.status(201).json(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error interno";
-      sendJson(response, 400, { error: message });
+      next(error);
     }
   });
 
+  server.use(
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction
+    ) => {
+      const message = error instanceof Error ? error.message : "Error interno";
+      res.status(400).json({ error: message });
+    }
+  );
+
   return server.listen(port, () => {
-    console.log(`API y frontend: http://localhost:${port}`);
+    console.log(`API Express y frontend: http://localhost:${port}`);
   });
 }

@@ -1,22 +1,13 @@
-import { CreateOrderUseCase } from "./orders/application/create-order.use-case";
-import { InMemoryOrderRepository } from "./orders/infrastructure/in-memory-order.repository";
-import { recordPayment } from "./payments/record-payment";
+import { createOrdersModule } from "./orders/orders.module";
+import { createPaymentsModule } from "./payments/payments.module";
 
 /**
- * Composition root compartido por API y CLI.
- *
- * Conecta puertos con adaptadores concretos. Ningún caso de uso necesita
- * saber si fue invocado desde HTTP, un frontend o la terminal.
+ * Composition root fino: junta módulos de feature.
+ * No registra clases sueltas; cada feature se compone a sí mismo.
  */
 export function createApplication() {
-  const orderRepository = new InMemoryOrderRepository();
-  const createOrder = new CreateOrderUseCase(
-    orderRepository,
-    () => crypto.randomUUID()
-  );
-
   return {
-    createOrder,
-    recordPayment,
+    ...createOrdersModule(),
+    ...createPaymentsModule(),
   };
 }

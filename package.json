@@ -8,7 +8,11 @@
     "cli": "tsx src/apps/cli/cli.ts",
     "typecheck": "tsc"
   },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^26.2.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"

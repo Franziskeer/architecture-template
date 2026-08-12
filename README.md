@@ -21,10 +21,11 @@ Así evitas Clean Architecture global el día 1 y la introduces **por feature** 
 src/
   apps/                           # formas de entrar en la aplicación
     api/
-      server.ts                   # HTTP + entrega del frontend
+      server.ts                   # Express + entrega del frontend
     cli/
       cli.ts                      # comandos de terminal
   orders/                         # feature con reglas → capas locales
+    orders.module.ts              # cableado del feature
     domain/
       order.entity.ts
       order.repository.ts         # puerto
@@ -37,10 +38,11 @@ src/
     interface/
       order.controller.ts
   payments/                       # feature simple → sin capas
+    payments.module.ts            # cableado del feature
     record-payment.ts
   shared/                         # solo lo realmente compartido
     money.vo.ts
-  bootstrap.ts                    # composition root compartido
+  bootstrap.ts                    # junta módulos de feature
   main.ts                         # arranca la API
 public/
   index.html                      # frontend que consume la API
@@ -57,9 +59,10 @@ Terminal ───────────────→ CLI ─┘
 ```
 
 - El frontend no invoca controllers directamente: hace `fetch` a la API.
-- La API traduce HTTP y delega en el controller/use case.
+- La API (Express) traduce HTTP y delega en el controller/use case.
+- Cambiar Express por Fastify/Nest solo afecta a `apps/api/`.
 - La CLI traduce argumentos y reutiliza la misma aplicación.
-- `bootstrap.ts` construye las dependencias concretas para ambos adaptadores.
+- Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
 - El dominio no importa nada de HTTP, HTML ni `process.argv`.
 
 ### Dependencias (dentro de un feature rico)
