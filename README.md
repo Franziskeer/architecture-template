@@ -2,12 +2,12 @@
 
 Ejemplo en TypeScript de organización por **feature** (el repo grita el negocio, no el framework).
 
-| Feature | Idea |
-| ------- | ---- |
-| **orders** | Feature compleja: vertical slices + dominio/infra |
-| **payments** | Feature simple: pocos archivos, sin capas |
-| **apps** | Entradas: API Express y CLI |
-| **shared** | Solo piezas transversales (`config`, `logger`, errores, `Money`) |
+| Feature      | Idea                                                             |
+| ------------ | ---------------------------------------------------------------- |
+| **orders**   | Feature compleja: vertical slices + dominio/infra                |
+| **payments** | Feature simple: pocos archivos, sin capas                        |
+| **apps**     | Entradas: API Express y CLI                                      |
+| **shared**   | Solo piezas transversales (`config`, `logger`, errores, `Money`) |
 
 Para convenciones de código y mantenimiento asistido por agentes, ver [AGENTS.md](./AGENTS.md).
 
@@ -61,9 +61,12 @@ npm run cli -- record-payment --order order-1 --amount 20
 ### Otros scripts
 
 ```bash
+npm test
 npm run typecheck
 npm run format
 ```
+
+CI en GitHub Actions (`.github/workflows/ci.yml`): `typecheck`, Prettier check, `test` y `build`.
 
 ---
 

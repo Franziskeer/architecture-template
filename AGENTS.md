@@ -6,13 +6,13 @@ Este archivo es para **cómo cambiar el código sin romper el modelo**.
 
 ## Separación README vs AGENTS
 
-| Va en **README.md** | Va en **AGENTS.md** |
-| ------------------- | ------------------- |
-| Qué es el proyecto | Decisiones de arquitectura y por qué |
-| Cómo instalar / ejecutar | Convenciones al añadir features, slices, repos |
+| Va en **README.md**              | Va en **AGENTS.md**                            |
+| -------------------------------- | ---------------------------------------------- |
+| Qué es el proyecto               | Decisiones de arquitectura y por qué           |
+| Cómo instalar / ejecutar         | Convenciones al añadir features, slices, repos |
 | Endpoints y variables de entorno | Qué no hacer (sobreingeniería, capas globales) |
-| Estructura a alto nivel | Detalles de naming, errores, composition |
-| Ejemplos de CLI para humanos | Pitfalls técnicos (build, sqlite, etc.) |
+| Estructura a alto nivel          | Detalles de naming, errores, composition       |
+| Ejemplos de CLI para humanos     | Pitfalls técnicos (build, sqlite, etc.)        |
 
 No dupliques tutoriales largos en ambos. README = uso; AGENTS = mantenimiento.
 
@@ -91,9 +91,19 @@ npm run dev        # API con reload (tsx watch)
 npm run build      # tsup → dist/
 npm start          # node dist/main.js (tras build)
 npm run cli -- …   # CLI con tsx
+npm test           # Vitest (src/**/*.test.ts)
 npm run typecheck
 npm run format
 ```
+
+CI: `.github/workflows/ci.yml` ejecuta typecheck, prettier --check, test y build en Node 22.
+
+### Tests
+
+- Runner: **Vitest** (catálogo del skill de testing).
+- Colocar `*.test.ts` junto al código del feature (p. ej. `orders/domain/order.test.ts`).
+- Preferir repo in-memory en tests de casos de uso; no hace falta SQLite en unitarios.
+- Pirámide actual: unitario de dominio + use case. Sin E2E por ahora.
 
 ### Pitfall: `node:sqlite` + bundler
 
@@ -138,4 +148,4 @@ En este repo el adaptador SQLite usa `createRequire(import.meta.url)("node:sqlit
 2. ¿El dominio sigue libre de HTTP/env/logger?
 3. ¿Un puerto nuevo/ampliado tiene impls actualizadas?
 4. ¿Los errores tipados se mapean en el adaptador?
-5. ¿`npm run typecheck` (y `build` si tocas imports/sqlite) sigue verde?
+5. ¿`npm run typecheck`, `npm test` (y `build` si tocas imports/sqlite) siguen verdes?
