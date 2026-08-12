@@ -47,6 +47,7 @@ src/
     record-payment.ts
   shared/                         # solo lo realmente compartido
     config.ts                     # variables de entorno tipadas
+    logger.ts                     # logging estructurado (pino)
     money.vo.ts
   bootstrap.ts                    # junta módulos de feature
   main.ts                         # arranca la API
@@ -73,6 +74,7 @@ Terminal ───────────────→ CLI ─┘
 - La CLI traduce argumentos y reutiliza la misma aplicación.
 - Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
 - `shared/config.ts` carga `.env` y tipa la config; el dominio no lee `process.env`.
+- `shared/logger.ts` (pino) se usa en adaptadores; el dominio no registra logs.
 - `ORDER_REPOSITORY=memory|sqlite` elige el adaptador sin tocar use cases.
 - El dominio no importa nada de HTTP, HTML ni `process.argv`.
 
@@ -127,6 +129,8 @@ Copia variables locales:
 ```bash
 cp .env.example .env
 ```
+
+`LOG_LEVEL` controla el logger (`info`, `debug`, …). En `development` usa formato legible (`pino-pretty`); en otros entornos sale JSON puro.
 
 ### API + frontend
 

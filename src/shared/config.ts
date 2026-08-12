@@ -35,6 +35,7 @@ function orderRepositoryEnv(): OrderRepositoryDriver {
 export const config = {
   port: numberEnv("PORT", 3000),
   nodeEnv: process.env.NODE_ENV ?? "development",
+  logLevel: process.env.LOG_LEVEL ?? "info",
   orderRepository: orderRepositoryEnv(),
   sqlitePath: process.env.SQLITE_PATH ?? "./data/orders.sqlite",
 } as const;

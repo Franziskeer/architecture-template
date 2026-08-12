@@ -5,8 +5,12 @@ import { createApplication } from "../../bootstrap";
 import { createOrderRoutes } from "../../orders/interface/order.routes";
 import { createPaymentRoutes } from "../../payments/payments.routes";
 import { config } from "../../shared/config";
+import { logger } from "../../shared/logger";
 
-const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../public");
+const publicDir = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../public"
+);
 
 /**
  * App Express: middleware, montaje de routers de feature y listen.
@@ -19,6 +23,22 @@ export function startApi(port = config.port) {
   server.use(express.json());
   server.use(express.static(publicDir));
 
+  server.use((req, res, next) => {
+    const startedAt = Date.now();
+    res.on("finish", () => {
+      logger.info(
+        {
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: res.statusCode,
+          durationMs: Date.now() - startedAt,
+        },
+        "http_request"
+      );
+    });
+    next();
+  });
+
   server.get("/api/health", (_req, res) => {
     res.json({ status: "ok", env: config.nodeEnv });
   });
@@ -29,14 +49,26 @@ export function startApi(port = config.port) {
   );
   server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 
-  server.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    const message = error instanceof Error ? error.message : "Error interno";
-    res.status(400).json({ error: message });
-  });
+  server.use(
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction
+    ) => {
+      const message = error instanceof Error ? error.message : "Error interno";
+      logger.error({ err: error }, "http_error");
+      res.status(400).json({ error: message });
+    }
+  );
 
   return server.listen(port, () => {
-    console.log(
-      `API Express y frontend: http://localhost:${port} (${config.nodeEnv}, orders=${config.orderRepository})`
+    logger.info(
+      {
+        port,
+        orderRepository: config.orderRepository,
+      },
+      "api_started"
     );
   });
 }
