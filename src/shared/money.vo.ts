@@ -2,6 +2,8 @@
  * VALUE OBJECT compartido (shared)
  * Usado por más de un feature → vive fuera de orders/.
  */
+import { ValidationError } from "./errors";
+
 export class Money {
   private constructor(
     readonly amount: number,
@@ -9,8 +11,12 @@ export class Money {
   ) {}
 
   static of(amount: number, currency: string): Money {
-    if (amount < 0) throw new Error("amount no puede ser negativo");
-    if (!currency) throw new Error("currency es obligatoria");
+    if (amount < 0) {
+      throw new ValidationError("amount no puede ser negativo", "INVALID_AMOUNT");
+    }
+    if (!currency) {
+      throw new ValidationError("currency es obligatoria", "INVALID_CURRENCY");
+    }
     return new Money(Math.round(amount * 100) / 100, currency);
   }
 
@@ -33,7 +39,7 @@ export class Money {
 
   private assertSameCurrency(other: Money): void {
     if (this.currency !== other.currency) {
-      throw new Error("No se pueden mezclar monedas");
+      throw new ValidationError("No se pueden mezclar monedas", "CURRENCY_MISMATCH");
     }
   }
 }

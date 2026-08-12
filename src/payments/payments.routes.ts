@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { childLogger } from "../shared/logger";
+import { mapDomainError } from "../shared/map-domain-error";
 import type { RecordPaymentInput } from "./record-payment";
 import { recordPayment } from "./record-payment";
 
@@ -8,13 +9,12 @@ type RecordPayment = (input: RecordPaymentInput) => Promise<unknown>;
 const log = childLogger({ feature: "payments" });
 
 /**
- * Rutas HTTP del feature payments.
- * Slice simple: router aquí; si crece, muévelo a interface/.
+ * Rutas HTTP del feature payments (simple).
  */
 export function createPaymentRoutes(record: RecordPayment = recordPayment): Router {
   const router = Router();
 
-  router.post("/", async (req, res, next) => {
+  router.post("/", async (req, res) => {
     try {
       const result = await record(req.body);
       log.info(
@@ -26,8 +26,9 @@ export function createPaymentRoutes(record: RecordPayment = recordPayment): Rout
       );
       res.status(201).json(result);
     } catch (error) {
-      log.error({ err: error }, "payment_record_failed");
-      next(error);
+      const mapped = mapDomainError(error);
+      log.warn({ err: error, code: mapped.body.code }, "payment_record_failed");
+      res.status(mapped.status).json(mapped.body);
     }
   });
 

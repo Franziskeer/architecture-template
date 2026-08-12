@@ -1,5 +1,6 @@
 import { createApplication } from "../../bootstrap";
 import { config } from "../../shared/config";
+import { DomainError, NotFoundError } from "../../shared/errors";
 import { logger } from "../../shared/logger";
 
 function readFlag(name: string): string | undefined {
@@ -39,12 +40,6 @@ async function run(): Promise<void> {
   if (command === "get-order") {
     const orderId = requiredFlag("id");
     const order = await app.getOrder.execute(orderId);
-    if (!order) {
-      log.warn({ orderId }, "cli_order_not_found");
-      console.error("pedido no encontrado");
-      process.exitCode = 1;
-      return;
-    }
     log.info({ orderId }, "cli_get_order_ok");
     console.log(JSON.stringify(order, null, 2));
     return;
@@ -88,7 +83,13 @@ Uso:
 }
 
 run().catch((error) => {
-  logger.error({ err: error, channel: "cli" }, "cli_failed");
+  if (error instanceof NotFoundError) {
+    logger.warn({ err: error, code: error.code, channel: "cli" }, "cli_not_found");
+  } else if (error instanceof DomainError) {
+    logger.warn({ err: error, code: error.code, channel: "cli" }, "cli_domain_error");
+  } else {
+    logger.error({ err: error, channel: "cli" }, "cli_failed");
+  }
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;
 });

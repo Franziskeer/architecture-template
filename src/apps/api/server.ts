@@ -6,6 +6,7 @@ import { createOrdersRoutes } from "../../orders/orders.routes";
 import { createPaymentRoutes } from "../../payments/payments.routes";
 import { config } from "../../shared/config";
 import { logger } from "../../shared/logger";
+import { mapDomainError } from "../../shared/map-domain-error";
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../public");
 
@@ -50,9 +51,9 @@ export function startApi(port = config.port) {
   server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 
   server.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    const message = error instanceof Error ? error.message : "Error interno";
-    logger.error({ err: error }, "http_error");
-    res.status(400).json({ error: message });
+    const mapped = mapDomainError(error);
+    logger.error({ err: error, code: mapped.body.code }, "http_error");
+    res.status(mapped.status).json(mapped.body);
   });
 
   return server.listen(port, () => {

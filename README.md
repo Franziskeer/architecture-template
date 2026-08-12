@@ -46,6 +46,8 @@ src/
     payments.module.ts
   shared/
     config.ts
+    errors.ts                     # DomainError, ValidationError, NotFoundError
+    map-domain-error.ts           # dominio → HTTP (solo adaptadores)
     logger.ts
     money.vo.ts
   bootstrap.ts
@@ -68,12 +70,23 @@ Terminal ───────────────→ CLI ─┘
 - `payments`: un solo flujo, sin carpetas de capas.
 - `apps/api` solo monta; no conoce endpoints internos.
 - Dominio sin HTTP ni `process.env`.
+- Errores tipados en dominio; `mapDomainError` los traduce a status/code en routes.
 
 ### Dependencias (feature compleja)
 
 ```text
 *.route.ts → CreateOrder/GetOrder/... → domain ← infrastructure
 ```
+
+### Errores
+
+| Tipo                  | Origen                     | HTTP típico |
+| --------------------- | -------------------------- | ----------- |
+| `ValidationError`     | reglas de negocio / VO     | 422         |
+| `NotFoundError`       | recurso inexistente        | 404         |
+| payload HTTP inválido | route (antes del use case) | 400         |
+
+El dominio **no** conoce status codes; solo lanza `DomainError` con `code`.
 
 ---
 
