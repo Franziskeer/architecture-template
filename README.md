@@ -124,10 +124,15 @@ El dominio **no** conoce status codes; solo lanza `DomainError` con `code`.
 
 ```bash
 cp .env.example .env
-npm start
+npm run dev      # desarrollo (reload)
+npm run build    # genera dist/
+npm start        # API desde dist/ (tras build)
+npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
 ```
 
 `LOG_LEVEL` controla el logger. En `development`, formato legible; en otros entornos, JSON.
+
+**tsup** es el bundler que usa `build`: toma el TypeScript y genera JS listo para Node en `dist/` (rápido, basado en esbuild). Evita pelearse con `tsc` + ESM a pelo.
 
 ### Endpoints
 

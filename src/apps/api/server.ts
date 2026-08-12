@@ -1,6 +1,5 @@
 import express from "express";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { createApplication } from "../../bootstrap";
 import { createOrdersRoutes } from "../../orders/orders.routes";
 import { createPaymentRoutes } from "../../payments/payments.routes";
@@ -8,7 +7,8 @@ import { config } from "../../shared/config";
 import { logger } from "../../shared/logger";
 import { mapDomainError } from "../../shared/map-domain-error";
 
-const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../public");
+/** Raíz del proceso (tsx o `node dist/main.js` desde la raíz del repo). */
+const publicDir = path.join(process.cwd(), "public");
 
 /**
  * App Express: middleware, montaje de routers de feature y listen.

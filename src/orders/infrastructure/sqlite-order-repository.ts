@@ -1,12 +1,16 @@
 /**
  * Adaptador SQLite del puerto OrderRepository (node:sqlite).
+ * createRequire evita que el bundler reescriba `node:sqlite` a un paquete npm inexistente.
  */
 import { mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
 import { Money } from "../../shared/money.vo";
 import { Order, OrderItem, type OrderStatus } from "../domain/order";
 import type { OrderRepository } from "../domain/order-repository";
+
+const { DatabaseSync } = createRequire(import.meta.url)("node:sqlite") as typeof import("node:sqlite");
+type SqliteDatabase = InstanceType<typeof DatabaseSync>;
 
 interface StoredItem {
   productId: string;
@@ -23,7 +27,7 @@ interface OrderRow {
 }
 
 export class SqliteOrderRepository implements OrderRepository {
-  private readonly db: DatabaseSync;
+  private readonly db: SqliteDatabase;
 
   constructor(dbPath: string) {
     mkdirSync(path.dirname(dbPath), { recursive: true });
