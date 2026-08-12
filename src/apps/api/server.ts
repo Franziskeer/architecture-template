@@ -2,16 +2,17 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApplication } from "../../bootstrap";
-import { OrderController } from "../../orders/interface/order.controller";
+import { createOrderRoutes } from "../../orders/interface/order.routes";
+import { createPaymentRoutes } from "../../payments/payments.routes";
 
-const publicDir = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../../public"
-);
+const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../public");
 
+/**
+ * App Express: middleware, montaje de routers de feature y listen.
+ * Las rutas concretas viven en cada feature.
+ */
 export function startApi(port = 3000) {
   const app = createApplication();
-  const orderController = new OrderController(app.createOrder);
   const server = express();
 
   server.use(express.json());
@@ -21,31 +22,13 @@ export function startApi(port = 3000) {
     res.json({ status: "ok" });
   });
 
-  server.post("/api/orders", async (req, res) => {
-    const result = await orderController.create(req.body);
-    res.status(result.status).json(result.body);
-  });
+  server.use("/api/orders", createOrderRoutes(app.createOrder));
+  server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 
-  server.post("/api/payments", async (req, res, next) => {
-    try {
-      const result = await app.recordPayment(req.body);
-      res.status(201).json(result);
-    } catch (error) {
-      next(error);
-    }
+  server.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    const message = error instanceof Error ? error.message : "Error interno";
+    res.status(400).json({ error: message });
   });
-
-  server.use(
-    (
-      error: unknown,
-      _req: express.Request,
-      res: express.Response,
-      _next: express.NextFunction
-    ) => {
-      const message = error instanceof Error ? error.message : "Error interno";
-      res.status(400).json({ error: message });
-    }
-  );
 
   return server.listen(port, () => {
     console.log(`API Express y frontend: http://localhost:${port}`);

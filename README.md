@@ -21,7 +21,7 @@ Así evitas Clean Architecture global el día 1 y la introduces **por feature** 
 src/
   apps/                           # formas de entrar en la aplicación
     api/
-      server.ts                   # Express + entrega del frontend
+      server.ts                   # Express: middleware + montar routers
     cli/
       cli.ts                      # comandos de terminal
   orders/                         # feature con reglas → capas locales
@@ -37,8 +37,10 @@ src/
       in-memory-order.repository.ts
     interface/
       order.controller.ts
+      order.routes.ts             # router Express del feature
   payments/                       # feature simple → sin capas
     payments.module.ts            # cableado del feature
+    payments.routes.ts            # router Express del feature
     record-payment.ts
   shared/                         # solo lo realmente compartido
     money.vo.ts
@@ -59,8 +61,8 @@ Terminal ───────────────→ CLI ─┘
 ```
 
 - El frontend no invoca controllers directamente: hace `fetch` a la API.
-- La API (Express) traduce HTTP y delega en el controller/use case.
-- Cambiar Express por Fastify/Nest solo afecta a `apps/api/`.
+- `apps/api/server.ts` monta routers; las rutas viven en cada feature.
+- Cambiar Express por Fastify/Nest afecta a `apps/api/` y a los `*.routes.ts`.
 - La CLI traduce argumentos y reutiliza la misma aplicación.
 - Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
 - El dominio no importa nada de HTTP, HTML ni `process.argv`.
