@@ -31,10 +31,12 @@ src/
       order.repository.ts         # puerto
     application/
       create-order.use-case.ts
+      get-order.use-case.ts
       order.dto.ts
       order.mapper.ts
     infrastructure/
       in-memory-order.repository.ts
+      sqlite-order.repository.ts  # segundo adaptador del mismo puerto
     interface/
       order.controller.ts
       order.routes.ts             # router Express del feature
@@ -60,6 +62,8 @@ Al abrir `src/` lees el producto (pedidos, pagos) y sus puntos de entrada. Eso e
 Navegador → frontend → HTTP API ┐
                                ├→ use case → dominio → repository
 Terminal ───────────────→ CLI ─┘
+                                    ↑
+                         memory o sqlite (mismo puerto)
 ```
 
 - El frontend no invoca controllers directamente: hace `fetch` a la API.
@@ -68,6 +72,7 @@ Terminal ───────────────→ CLI ─┘
 - La CLI traduce argumentos y reutiliza la misma aplicación.
 - Cada feature tiene su `*.module.ts`; `bootstrap.ts` solo los ensambla.
 - `shared/config.ts` carga `.env` y tipa la config; el dominio no lee `process.env`.
+- `ORDER_REPOSITORY=memory|sqlite` elige el adaptador sin tocar use cases.
 - El dominio no importa nada de HTTP, HTML ni `process.argv`.
 
 ### Dependencias (dentro de un feature rico)
@@ -133,16 +138,29 @@ Abre `http://localhost:3000` (o el `PORT` de tu `.env`). Endpoints:
 ```text
 GET  /api/health
 POST /api/orders
+GET  /api/orders/:id
 POST /api/payments
 ```
+
+### Persistencia (memory vs sqlite)
+
+Por defecto usa memoria. Para SQLite (Node >= 22, módulo `node:sqlite`):
+
+```bash
+# en .env
+ORDER_REPOSITORY=sqlite
+SQLITE_PATH=./data/orders.sqlite
+```
+
+El use case no cambia: solo se sustituye la implementación de `OrderRepository`.
 
 ### CLI
 
 ```bash
 npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
+npm run cli -- get-order --id <order-id>
 npm run cli -- record-payment --order order-1 --amount 20
 ```
 
-Cada proceso usa almacenamiento en memoria. Por eso los datos no se comparten
-entre ejecuciones de CLI ni sobreviven al reinicio de la API. Una BD real
-resolvería esa limitación implementando el mismo puerto `OrderRepository`.
+Con `ORDER_REPOSITORY=sqlite`, create/get de CLI y API comparten el mismo fichero si apuntan al mismo `SQLITE_PATH`.
+Con `memory`, cada proceso tiene su propio almacén.

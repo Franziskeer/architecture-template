@@ -31,6 +31,17 @@ async function run(): Promise<void> {
     return;
   }
 
+  if (command === "get-order") {
+    const order = await app.getOrder.execute(requiredFlag("id"));
+    if (!order) {
+      console.error("pedido no encontrado");
+      process.exitCode = 1;
+      return;
+    }
+    console.log(JSON.stringify(order, null, 2));
+    return;
+  }
+
   if (command === "record-payment") {
     const result = await app.recordPayment({
       orderId: requiredFlag("order"),
@@ -44,9 +55,11 @@ async function run(): Promise<void> {
 
   console.log(`
 Entorno: ${config.nodeEnv}
+Orders repo: ${config.orderRepository}
 
 Uso:
   npm run cli -- create-order --customer cust-1 --product sku-42 --quantity 2 --price 10
+  npm run cli -- get-order --id <order-id>
   npm run cli -- record-payment --order order-1 --amount 20
   `.trim());
 }

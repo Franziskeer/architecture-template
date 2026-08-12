@@ -23,7 +23,7 @@ export function startApi(port = config.port) {
     res.json({ status: "ok", env: config.nodeEnv });
   });
 
-  server.use("/api/orders", createOrderRoutes(app.createOrder));
+  server.use("/api/orders", createOrderRoutes(app.createOrder, app.getOrder));
   server.use("/api/payments", createPaymentRoutes(app.recordPayment));
 
   server.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -32,6 +32,8 @@ export function startApi(port = config.port) {
   });
 
   return server.listen(port, () => {
-    console.log(`API Express y frontend: http://localhost:${port} (${config.nodeEnv})`);
+    console.log(
+      `API Express y frontend: http://localhost:${port} (${config.nodeEnv}, orders=${config.orderRepository})`
+    );
   });
 }

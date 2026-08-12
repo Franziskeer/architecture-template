@@ -20,6 +20,19 @@ export class Order {
     return new Order(id, customerId, items, "draft");
   }
 
+  /** Rehidrata un pedido ya persistido (infra → dominio). */
+  static reconstitute(
+    id: string,
+    customerId: string,
+    items: OrderItem[],
+    status: OrderStatus
+  ): Order {
+    if (!items.length) {
+      throw new Error("Un pedido necesita al menos un ítem");
+    }
+    return new Order(id, customerId, items, status);
+  }
+
   confirm(): void {
     if (this.status !== "draft") {
       throw new Error("Solo se puede confirmar un pedido en borrador");

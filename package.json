@@ -2,6 +2,9 @@
   "name": "clean-architecture-example",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "tsx src/main.ts",
     "api": "tsx src/main.ts",

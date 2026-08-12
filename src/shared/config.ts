@@ -24,7 +24,17 @@ export function requireEnv(name: string): string {
   return value;
 }
 
+type OrderRepositoryDriver = "memory" | "sqlite";
+
+function orderRepositoryEnv(): OrderRepositoryDriver {
+  const value = (process.env.ORDER_REPOSITORY ?? "memory").toLowerCase();
+  if (value === "memory" || value === "sqlite") return value;
+  throw new Error('ORDER_REPOSITORY debe ser "memory" o "sqlite"');
+}
+
 export const config = {
   port: numberEnv("PORT", 3000),
   nodeEnv: process.env.NODE_ENV ?? "development",
+  orderRepository: orderRepositoryEnv(),
+  sqlitePath: process.env.SQLITE_PATH ?? "./data/orders.sqlite",
 } as const;
