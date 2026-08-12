@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pedidos y pagos</title>
+    <style>
+      body { max-width: 760px; margin: 40px auto; padding: 0 20px; font: 16px system-ui; }
+      form { display: grid; gap: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; }
+      input, button { padding: 10px; font: inherit; }
+      button { cursor: pointer; }
+      pre { min-height: 80px; padding: 16px; color: #eee; background: #222; border-radius: 8px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Interfaz web</h1>
+    <p>Este frontend es otro adaptador de entrada. Solo conoce la API HTTP.</p>
+
+    <form id="order-form">
+      <h2>Crear pedido</h2>
+      <input name="customerId" value="cust-1" placeholder="Cliente" required>
+      <input name="productId" value="sku-42" placeholder="Producto" required>
+      <input name="quantity" type="number" value="2" min="1" required>
+      <input name="price" type="number" value="10" min="0" step="0.01" required>
+      <button>Crear pedido</button>
+    </form>
+
+    <form id="payment-form">
+      <h2>Registrar pago</h2>
+      <input name="orderId" placeholder="ID del pedido" required>
+      <input name="amount" type="number" value="20" min="0" step="0.01" required>
+      <button>Registrar pago</button>
+    </form>
+
+    <h2>Respuesta</h2>
+    <pre id="output">Esperando una acción...</pre>
+
+    <script>
+      const output = document.querySelector("#output");
+      const orderForm = document.querySelector("#order-form");
+      const paymentForm = document.querySelector("#payment-form");
+
+      async function post(path, body) {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const result = await response.json();
+        output.textContent = JSON.stringify(result, null, 2);
+        if (!response.ok) throw new Error(result.error);
+        return result;
+      }
+
+      orderForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = new FormData(orderForm);
+        try {
+          const order = await post("/api/orders", {
+            customerId: data.get("customerId"),
+            items: [{
+              productId: data.get("productId"),
+              quantity: Number(data.get("quantity")),
+              unitPrice: Number(data.get("price")),
+              currency: "EUR",
+            }],
+          });
+          paymentForm.elements.orderId.value = order.id;
+        } catch {}
+      });
+
+      paymentForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = new FormData(paymentForm);
+        try {
+          await post("/api/payments", {
+            orderId: data.get("orderId"),
+            amount: Number(data.get("amount")),
+            currency: "EUR",
+          });
+        } catch {}
+      });
+    </script>
+  </body>
+</html>
